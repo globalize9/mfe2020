@@ -116,4 +116,135 @@ def gamble(capital):
 for i in range(3):
     gamble(capital)
 
+words = {'apple': 'red','lemon': 'yellow'}
+
+def Reverse(number:int) -> int:
+    # Reverse an integer
+    reverse = 0
+    if (number > 0):
+        while (number > 0):
+            reminder = number % 10
+            reverse = (reverse*10) + reminder
+            number = number // 10 # divides and returns the integer value of a quotient
+
+        "Reverse of {0} is {1}".format(float(number), reverse)
+        return reverse
+
+    elif (number < 0):
+        number = abs(number)
+        return -Reverse(number)
+    # in this code...number is in fact manipulated
+
+number = int(41250)
+Reverse(number)
+
+# 32 bits signed integers
+if (number < 2**31 - 1 and number > -2**31):
+    print("Integer is a 32bit signed")
+else:
+    print("Integer is NOT a 32bit signed")
+
+def list2int(list):
+    intc = str(list[0])
+    length = len(list)
+    for i in range(1,length):
+        intc += str(list[i])
+    return int(intc)
+
+# List apprehension
+'''x = int (input())
+y = int (input())
+n = int (input()) '''
+
+x = 3
+y = 2
+z = 5
+n = 4
+
+# when using range, the last argument is the stopping criteria
+# which does NOT get computed
+list_xyz = []
+list_xyz_ext = []
+for i in range(x + 1):
+    for j in range(y + 1):
+        for k in range(z + 1):
+            if (( i + j + k) != n ):
+                temp = [i, j, k]
+                list_xyz.append(temp)
+                list_xyz_ext.extend(temp)
+print(list_xyz)
+# for evenly spaced out increments, use numpy library
+import numpy as np
+zz = np.linspace(0,10,11) # generates 0 to 1, 11 of the values
+
+
+n = 8
+ru = [None] * n # define a list of size n
+# runner_up fn to sort the list
+print("Input array separated by space:")
+arr = list(map(int, input().split()))
+arr = np.array([1,3,4,1,3,-5,3,5])
+arr = np.array([6,6,6,6,6,6,6,5])
+arr = list(arr)
+
+# to check to see if everything in a list is greater than x
+def greatereq (arr, x):
+    counter = 0
+    for i in arr:
+        if i >= x:
+            counter += 1
+
+    if (counter == len(arr)):
+        return (1)
+    else:
+        return (0)
+
+def lessereq (arr, x):
+    counter = 0
+    for i in arr:
+        if i <= x:
+            counter += 1
+
+    if (counter == len(arr)):
+        return (1)
+    else:
+        return (0)
+
+
+if (n>=2 and n<= 10 and greatereq(arr,-100) and lessereq(arr,100)):
+    for i in range(len(arr)):
+        ru[i] = arr[i]
+
+    ru.sort(reverse = True)
+    for i in range(len(ru)):
+        if (max(ru) != ru[i]):
+            print(ru[i])
+            break
+
+
+
+# intersetion of A and B set of numbers
+nn = int(input())
+print("Input number of students separated by space:")
+n = list(map(int, input().split()))
+bb = int(input())
+b = list(map(int, input().split()))
+#if ((len(n) + len(b)) > 0 and ((len(n) + len(b)) < 1000 )):
+# the if statement only works if both n and b are independent
+temp_nb = (set(n).intersection(set(b)))
+print(len(temp_nb))
+print(len(n.difference(b))) # the opposite of intersection
+
+z = set(map(str, input().split()))
+b = set(map(str, input().split()))
+z.intersection(b)
+
+
+
+
+
+
+
+
+
 
