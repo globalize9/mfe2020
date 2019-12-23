@@ -239,6 +239,76 @@ z = set(map(str, input().split()))
 b = set(map(str, input().split()))
 z.intersection(b)
 
+import calendar
+print("Input calendar date in MM DD YYYY:")
+calendar_in = list(map(int, input().split()))
+cal_int = int(''.join(map(str,calendar_in)))
+print(calendar.day_name[calendar.weekday(calendar_in[2],calendar_in[0],calendar_in[1])])
+
+
+import datetime as dt
+time_in = "Sun 10 May 2015 13:54:36 -0700"
+time_in2 = "Sun 10 May 2015 13:54:36 -0000"
+
+t_arr = ["Sun 10 May 2015 13:54:36 -0700",
+"Sun 10 May 2015 13:54:36 -0000",
+"Sat 02 May 2015 19:54:36 +0530",
+"Fri 01 May 2015 13:54:36 -0000"]
+
+t1 = dt.datetime.strptime(t_arr[0], '%a %d %B %Y %H:%M:%S %z')
+t2 = dt.datetime.strptime(t_arr[1], '%a %d %B %Y %H:%M:%S %z')
+
+int((t1-t2).total_seconds())
+
+
+
+# array in python with building across dimensions
+import numpy
+dim_arr = list(map(int, input().split())) #2nd value is column
+arr = numpy.zeros((dim_arr), dtype = int) # initialize an array of zeros
+
+# this is a column input...you could use row input
+for j in range(dim_arr[1]):
+    "Input {0} column data:".format(j)
+    arr[:,j] = list(map(int,input().split()))
+
+
+print(arr)
+print(numpy.transpose(arr).flatten())
+
+
+# extract the numerical portion of an input
+N = int(input()) # number of commands to be executed
+list = []
+
+for i in range(N):
+    str = input()
+    digits = [int(j) for j in str.split() if j.isdigit()]
+    cmd = str.split()[0]
+    if (cmd == "insert"):
+        list.insert(digits[0], digits[1])
+    elif (cmd == "print"):
+        print(list)
+    elif (cmd == "remove"):
+        list.remove(digits[0])
+    elif (cmd == "append"):
+        list.append(digits[0])
+    elif (cmd == "sort"):
+        list.sort()
+    elif (cmd == "pop"):
+        list.pop()
+    elif (cmd == "reverse"):
+        list.reverse()
+
+
+
+
+
+
+
+
+
+
 
 
 
