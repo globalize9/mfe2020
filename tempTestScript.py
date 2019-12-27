@@ -151,6 +151,10 @@ def list2int(list):
         intc += str(list[i])
     return int(intc)
 
+# Splitting an integer into its digits
+integ = 123452
+digits = [int(i) for i in str(integ)]
+
 # List apprehension
 '''x = int (input())
 y = int (input())
@@ -299,6 +303,104 @@ for i in range(N):
         list.pop()
     elif (cmd == "reverse"):
         list.reverse()
+
+
+
+from collections import Counter
+myList = [1,1,2,3,4,5,3,2,3,4,2,1,2,3]
+cnt = Counter(myList) # you can manipulate this Counter item directly
+print(cnt)
+print(cnt.items())
+print(cnt.keys())
+print(cnt.values()) # set of values corresponding to keys literally
+sum(cnt.values()) == len(myList)
+
+
+# Enter your code here. Read input from STDIN. Print output to STDOUT
+from collections import Counter
+
+n = 3
+#stock = list(map(int,input().split()))
+stock = {1:2, 5:1}
+stock = [1, 1, 5]
+cnt = Counter(stock)
+total = 0
+
+customer = int(input())
+
+for i in range(customer):
+    temp = list(map(int,input().split()))
+    #if (temp[0] == cnt.get(temp[0])):
+    if (cnt.get(temp[0]) != None and cnt.get(temp[0]) > 0):
+        cnt[temp[0]] -= 1
+        total = total + temp[1]
+
+print(total)
+
+if (total):
+    print("wowow",total)
+
+
+
+import email.utils
+print(email.utils.parseaddr('DOSHI <DOSHI@hackerrank.com>'))
+print(email.utils.formataddr(('DOSHI', 'DOSHI@hackerrank.com')))
+
+temp = ['DOSHI', 'DOSHI@hackerrank.com']
+import re
+
+email_address = "Please contact us at: xyz@datacamp.com"
+new_email_address = re.findall('([\w\.-]+)@([\w\.-]+)', temp[1])
+print(new_email_address)
+
+#"{0}@{1}".format(str(new_email_address[0][0],str(new_email_address[0][1])))
+for i in n:
+    #in_str = input()
+    in_str = "Dexter <dexter@gmail.com>"
+    in_str = in_str.split()
+    new_input = re.findall('([\w\.-]+)@([\w\.-]+)', in_str[1])
+    if (new_input != []):
+        out_2 = "<" + new_input[0][0] + "@" + new_input[0][1] + ">"
+        out_1 = in_str[0]
+        output = [out_1, out_2]
+# above does not address the limitations!!!
+
+import re
+n = int(input())
+for _ in range(n):
+    x, y = input().split(' ')
+    m = re.match(r'<[A-Za-z](\w|-|\.|_)+@[A-Za-z]+\.[A-Za-z]{1,3}>', y)
+    if m:
+        print(x,y)
+
+
+
+import numpy
+a = numpy.array([1,2,3],[4,5,6])
+a_list = list(a.T.ravel())
+# this works for numbers only...
+
+n = 2
+m = 3
+
+matrix = [("e","$","1"), ("1","s","4")]
+temp = list(zip(*matrix))
+matrix_new = "" # this initializer determines the output of the string
+
+for j in range(m):
+    for i in range(n):
+        matrix_new += matrix[i][j]
+
+aa = "apple$ 123 $$ #"
+temp = re.sub(r'\b[^a-zA-Z0-9]+\b', ' ',aa)
+
+
+
+
+
+
+
+
 
 
 
