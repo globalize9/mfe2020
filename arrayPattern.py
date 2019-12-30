@@ -80,21 +80,49 @@ tl_m = [row[:] for row in matrix] # this is the way to go to copy a matrix
 
 def compare(up,left):
     if (up == 'null'):
-        if (left == 'null' and up == 'null'): return 0
-        return left
+        if (left == 'null' and up == 'null'): return (0,"")
+        #print("down")
+        return (left, "r")
     if (left == 'null'):
-        if (left == 'null' and up == 'null'): return 0
-        return up
-    if (left == 'null' and up == 'null'): return 0
-    if (up > left): return up
-    else: return left
+        if (left == 'null' and up == 'null'): return (0,"")
+        #print("right")
+        return (up, "d")
+    if (left == 'null' and up == 'null'): return (0,"")
+    if (up > left): return (up, "d") # this line determines the implicit favorite
+    else: return (left, "r")
 
 def max_matrix(temp_tlm):
+    max_val = -999
     for i in range(len(temp_tlm)):
         for j in range(len(temp_tlm)):
-            max_val = -999
             if (temp_tlm[i][j] > max_val): max_val = temp_tlm[i][j]
     return max_val
+
+def moves(matrix):
+    moves = []
+    i,j = 1,1
+    while (i <= len(matrix) - 1 and j <= len(matrix) - 1):
+        if (matrix[i-1][j] >= matrix[i][j-1]):
+            moves.append("r")
+            j += 1
+
+        else:
+            moves.append("d")
+            i += 1
+
+        if (i >= len(matrix)):
+            i = len(matrix) - 1
+            moves.append("r")
+            j += 1
+
+        if (j >= len(matrix)):
+            j = len(matrix) - 1
+            moves.append("d")
+            i += 1
+    return moves
+# the big question remains if you are able to write one fn to define all 4 corners
+
+# To determine what quadrant the maximum is
 
 for i in range(center+1):
     for j in range(center+1):
@@ -104,12 +132,13 @@ for i in range(center+1):
             up = 'null'
         if (j-1 < 0):
             left = 'null'
-        tl_m[i][j] = arr[i][j] + compare(up, left)
+        tl_m[i][j] = arr[i][j] + compare(up, left)[0]
+
 
 temp_tlm = [row[:] for row in tl_m]
 temp_tlm[0][0] = -999
 temp_tlm[len(temp_tlm)-1][len(temp_tlm)-1] = -999
-max([x for x in z]) # list comprehension to obbtain the maximum value
+max_value = max_matrix(temp_tlm)
 
 
 # exception handling
