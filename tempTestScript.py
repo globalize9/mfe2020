@@ -138,6 +138,14 @@ def Reverse(number:int) -> int:
 number = int(41250)
 Reverse(number)
 
+def ReverseList(lll):
+    int_val = []
+    temp = [x for x in lll]
+    temp.reverse()
+    for val in temp:
+        int_val.append(val)
+    return((''.join(map(str,int_val))))
+
 # 32 bits signed integers
 if (number < 2**31 - 1 and number > -2**31):
     print("Integer is a 32bit signed")
@@ -396,6 +404,15 @@ temp = re.sub(r'\b[^a-zA-Z0-9]+\b', ' ',aa)
 
 
 
+''' input detection and sorting
+    n = int(input())
+    student_marks = {}
+    for _ in range(n):
+        name, *line = input().split()
+        scores = list(map(float, line))
+        student_marks[name] = scores
+    query_name = input()
+'''
 
 
 

@@ -169,3 +169,13 @@ def findNumber(arr, k):
 
 
 
+
+
+
+
+
+
+
+
+
+
