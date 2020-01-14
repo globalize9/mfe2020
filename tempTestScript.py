@@ -414,8 +414,26 @@ temp = re.sub(r'\b[^a-zA-Z0-9]+\b', ' ',aa)
     query_name = input()
 '''
 
+import sys
+for line in sys.stdin:
+    print(line, end="")
 
+stringsin = list(map(str, input().split())) 
+last = int(stringsin[len(stringsin) - 1])
+if (last >= len(stringsin)):
+    print("")
+else:
+    print(stringsin[len(stringsin) - 1 - last])
 
+#import sys
+#for line in sys.stdin:
+#    #print(line, end="")
+#    stringsin = list(map(str, line.split())) 
+#    last = int(stringsin[len(stringsin) - 1])
+#    if (last >= len(stringsin)):
+#        print("")
+#    else:
+#        print(stringsin[len(stringsin) - 1 - last])
 
 
 
