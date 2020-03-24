@@ -384,9 +384,13 @@ for _ in range(n):
 
 
 import numpy
-a = numpy.array([1,2,3],[4,5,6])
+a = numpy.array([[1,2,3],[4,5,6]])
 a_list = list(a.T.ravel())
 # this works for numbers only...
+a
+a_list
+numpy.sort(a, axis = None)
+
 
 n = 2
 m = 3
