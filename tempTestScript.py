@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+d# -*- coding: utf-8 -*-
 """
 Spyder Editor
 
@@ -440,7 +440,61 @@ else:
 #        print(stringsin[len(stringsin) - 1 - last])
 
 
+Celsius = [39.2, 36.5, 37.3, 37.8]
+Fahrenheit = map(lambda x: (float(9)/5)*x + 32, Celsius)
+print Fahrenheit
 
+C = map(lambda x: (float(5)/9)*(x-32), Fahrenheit)
+print C
+
+
+
+
+########################### testing the Prophet model ############################
+# https://towardsdatascience.com/time-series-prediction-using-prophet-in-python-35d65f626236
+from fbprophet import Prophet
+from fbprophet.plot import plot_plotly
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+dataset = pd.read_csv('C:/Users/yushi/Downloads/example_air_passengers.csv')
+dataset.describe(include = 'O')
+dataset.dtypes
+
+
+prophet_basic = Prophet()
+prophet_basic.fit(dataset)
+
+future = prophet_basic.make_future_dataframe(periods=300)
+future.tail(2)
+
+forecast = prophet_basic.predict(future)
+fig1 = prophet_basic.plot(forecast)
+fig1 = prophet_basic.plot_components(forecast)
+
+# adding change points
+from fbprophet.plot import add_changepoints_to_plot
+
+fig = prophet_basic.plot(forecast)
+a = add_changepoints_to_plot(fig.gca(), prophet_basic, forecast)
+
+prophet_basic.changepoints
+
+# change the inferred changepoint range by setting the changepoint_range
+pro_change= Prophet(changepoint_range=0.9, changepoint_prior_scale=0.08)
+forecast = pro_change.fit(dataset).predict(future)
+fig= pro_change.plot(forecast);
+a = add_changepoints_to_plot(fig.gca(), pro_change, forecast)
+
+
+
+
+
+############## testing pdblp BBG ###################
+import pdblp
+con = pdblp.BCon(debug=True, port=8194, timeout=5000)
+con.start()
 
 
 

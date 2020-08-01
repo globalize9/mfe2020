@@ -30,7 +30,7 @@ print ("time elapsed is: {} good".format(str(duration)[5:13])) # subsets to only
 os.getcwd()
 # os.chdir("Documents\GitHub\mfe2020\Volatility Project")
 vol = pd.read_csv("Documents\GitHub\mfe2020\Volatility Project\lalaland.csv")
-vol.index = vol.date
+# vol.index = vol.date
 sp500 = pd.read_csv("Documents\GitHub\mfe2020\Volatility Project\sp500vwretd.csv")
 datetime.datetime.strptime("2013-1-25", '%Y-%m-%d').strftime('%m/%d/%y')
 vix = vol['vix'].dropna()
@@ -44,11 +44,13 @@ Individual stocks testing along with pandas and numpy
 # from statsmodels.graphics.tsaplots import plot_acf, plot_pacf, acf
 from statsmodels.graphics.tsaplots import *
 import investpy
+from datetime import *
 
 stock_symbols = ['BP', 'CVX']
 
-from_date = '01/01/1992' #dd/mm/yyyy
-end_date = '31/12/2020'
+from_date = '01/01/2002' ## dd/mm/yyyy
+end_date = '14/07/2020'
+end_date = datetime.strftime(datetime.date(datetime.today()), format = '%d/%m/%Y')
 
 stocks = {}
 closing = {}
@@ -99,5 +101,59 @@ joint_sub = joint_df[start_dt:end_dt]
 del joint_sub['Dates']
 joint_sub.plot(kind = "line", alpha = 0.4, color = ['r', 'k'])
 
+
+all_indices = investpy.indices.get_indices()
+
+vix = investpy.indices.get_index_historical_data(index='S&P 500 VIX', country='united states', from_date = from_date, to_date = end_date)
+
+df_vix = investpy.get_index_recent_data(index='S&P 500 VIX', country='united states')
+df_vix
+
+from fbprophet import Prophet
+from fbprophet.plot import plot_plotly
+
+def prophet_model(vix):
+    vix = vix['Close']
+    vix = pd.DataFrame(vix)
+    vix.columns = ['y']
+    vix['ds'] = vix.index.to_pydatetime()
+    # preping the data for analysis
+    train_df = vix[:len(vix)-20]
+    
+    prophet_basic = Prophet()
+    prophet_basic.fit(train_df)
+    
+    future = prophet_basic.make_future_dataframe(periods=100)
+    future.tail(2)
+    
+    forecast = prophet_basic.predict(future)
+    fig1 = prophet_basic.plot(forecast)
+    fig1 = prophet_basic.plot_components(forecast)
+    
+    forecast['actual_y'] = np.NaN
+    forecast.loc[:len(vix.index)-1,'actual_y'] = vix['y'].values
+    forecast['MAPE'] = abs(forecast['actual_y'] - forecast['yhat']) / forecast['actual_y']
+    print(forecast['MAPE'].plot(title='MAPE'))
+    return forecast
+
+vix_forecast = prophet_model(vix)
+
+stock_df = investpy.get_stock_historical_data(stock = 'PSX', country = 'united states', from_date = from_date, to_date = end_date)
+psx_forecast = prophet_model(stock_df)
+
+
+# adding change points
+from fbprophet.plot import add_changepoints_to_plot
+
+fig = prophet_basic.plot(forecast)
+a = add_changepoints_to_plot(fig.gca(), prophet_basic, forecast)
+
+prophet_basic.changepoints
+
+# change the inferred changepoint range by setting the changepoint_range
+pro_change= Prophet(changepoint_range=0.9, changepoint_prior_scale=0.08)
+forecast = pro_change.fit(train_vix).predict(future)
+fig= pro_change.plot(forecast);
+a = add_changepoints_to_plot(fig.gca(), pro_change, forecast)
 
 
