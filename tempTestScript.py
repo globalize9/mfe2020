@@ -489,7 +489,31 @@ a = add_changepoints_to_plot(fig.gca(), pro_change, forecast)
 
 
 
+### * vs dot
+import numpy as np
+import pandas as pd
 
+a = np.array([1,2,3,4]).reshape(4,1)
+b = a.copy()
+a * b
+a * b.T # element wise
+a.dot(b.T) #  actual matrix ops
+
+### testing pandas market calendar
+import pandas_market_calendars as mcal
+holidays = mcal.get_calendar('NYSE')
+holidays = holidays.holidays
+
+pdSeries = pd.Series(holidays.holidays)
+
+
+### testing trading calendars adapted from Quantopian 
+# https://github.com/quantopian/trading_calendars
+# much more comprehensive compared to the pandas calendar
+from trading_calendars import get_calendar
+us_calendar = get_calendar('XNYS')
+open_dates = pd.Series(us_calendar.schedule.index)
+pd.to_datetime(open_dates).dt.date # conversion into daily 
 
 ############## testing pdblp BBG ###################
 import pdblp
