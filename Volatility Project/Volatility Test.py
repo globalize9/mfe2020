@@ -60,6 +60,17 @@ for stock_symbol in stock_symbols:
     stocks[stock_symbol] = df
     closing[stock_symbol] = df['Close']
 
+# obtaining the funds list
+# goal: look for the SPX index fund or index
+funds_list = investpy.get_funds_list(country='united states')
+search_result = investpy.search_funds(by='name', value='500')
+
+# the targetted ETF in this case is VFINX, name below
+# the underlying is the S&P 500 TR which is exactly what we are looking for
+df = investpy.get_fund_historical_data(fund='Vanguard 500 Index Fund Investor Shares', country='united states', from_date='01/01/2018', to_date='01/01/2019')
+
+
+
 df_close = pd.DataFrame(closing)
 close_ret = df_close.pct_change()
 close_ret.plot(kind = 'line')
@@ -102,7 +113,7 @@ del joint_sub['Dates']
 joint_sub.plot(kind = "line", alpha = 0.4, color = ['r', 'k'])
 
 
-all_indices = investpy.indices.get_indices()
+all_indices = investpy.indices.get_indices(country='united states')
 
 vix = investpy.indices.get_index_historical_data(index='S&P 500 VIX', country='united states', from_date = from_date, to_date = end_date)
 

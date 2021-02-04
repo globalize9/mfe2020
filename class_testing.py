@@ -83,3 +83,4 @@ print(isinstance(t,int))
 print(issubclass(Polygon,Triangle))
 print(issubclass(Triangle,Polygon))
 # %%
+# %%
