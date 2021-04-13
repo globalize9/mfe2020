@@ -3,7 +3,6 @@
 """
 Created on Sun Jan 10 15:17:57 2021
 
-@author: minayuan
 """
 import pandas as pd
 import numpy as np
@@ -73,7 +72,7 @@ data = yf.download(  # or pdr.get_data_yahoo(...
         # use "period" instead of start/end
         # valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
         # (optional, default is '1mo')
-        period = "1y",
+        period = "20y",
 
         # fetch data by interval (including intraday if period < 60 days)
         # valid intervals: 1m,2m,5m,15m,30m,60m,90m,1h,1d,5d,1wk,1mo,3mo
@@ -104,7 +103,7 @@ data = yf.download(  # or pdr.get_data_yahoo(...
 
 stock_close = data.xs('Close', axis = 1, level = 1, drop_level = True)
 
-def BollingerBand(stocks, window=21, no_of_std=2):
+def BollingerBand(stocks, window=21, no_of_std=2, start_date = date(2017,1,1), end_date = date(2020,12,31)):
         
         # initiate a dataframe
         data = pd.DataFrame(stocks.values, index = stocks.index, columns = ['Close'])
@@ -116,7 +115,7 @@ def BollingerBand(stocks, window=21, no_of_std=2):
         data['Bollinger_Upper'] = data['Rolling_Mean'] + rolling_std * no_of_std
         data['Bollinger_Lower'] = data['Rolling_Mean'] - rolling_std * no_of_std
         
-        data.plot(color=['black','red','green','green'], title = 'BB')
+        data.plot(color=['black','red','green','green'], title = 'BB', xlim = [start_date, end_date])
         return data
     
 tt = BollingerBand(stock_close['MSFT'])
@@ -130,23 +129,37 @@ df['Position'] = None
 
 #Fill our newly created position column - set to sell (-1) when the price hits the upper band, and set to buy (1) when it hits the lower band
 for row in range(len(df)):
-    
     if (df['Close'].iloc[row] > df['Bollinger_Upper'].iloc[row]) and (df['Close'].iloc[row-1] < df['Bollinger_Upper'].iloc[row-1]):
         df['Position'].iloc[row] = -1
         
     if (df['Close'].iloc[row] < df['Bollinger_Lower'].iloc[row]) and (df['Close'].iloc[row-1] > df['Bollinger_Lower'].iloc[row-1]):
-        df['Position'].iloc[row] = 1  
-    
+        df['Position'].iloc[row] = 1 
+
+
     # think about how to close a long position
-    if df['Position'].iloc[row] == 1:
-         if (df['Close'].iloc[row] < df['Rolling_Mean'].iloc[row]) and (df['Close'].iloc[row-1] > df['Rolling_Mean'].iloc[row-1]):
-             df.loc[df.index[row],'Position'] = 0
+    # if df['Position'].iloc[row] == 1:
+    if (df['Close'].iloc[row] < df['Rolling_Mean'].iloc[row]) and (df['Close'].iloc[row-1] > df['Rolling_Mean'].iloc[row-1]):
+        df.loc[df.index[row],'Position'] = 0
     
     # how to close a short position
-    if df['Position'].iloc[row] == -1:
-         if (df['Close'].iloc[row] > df['Rolling_Mean'].iloc[row]) and (df['Close'].iloc[row-1] < df['Rolling_Mean'].iloc[row-1]):
-             df.loc[df.index[row],'Position'] = 0
+    # if df['Position'].iloc[row] == -1:
+    if (df['Close'].iloc[row] > df['Rolling_Mean'].iloc[row]) and (df['Close'].iloc[row-1] < df['Rolling_Mean'].iloc[row-1]):
+        df.loc[df.index[row],'Position'] = 0
+
+# the last 2 criterias essentially says that do NOT trade under certain conditions
+
              
+
+# Naive case where position switches between the two extremes
+#Fill our newly created position column - set to sell (-1) when the price hits the upper band, and set to buy (1) when it hits the lower band
+for row in range(len(df)):
+    if (df['Close'].iloc[row] > df['Bollinger_Upper'].iloc[row]) and (df['Close'].iloc[row-1] < df['Bollinger_Upper'].iloc[row-1]):
+        df['Position'].iloc[row] = -1
+        
+    if (df['Close'].iloc[row] < df['Bollinger_Lower'].iloc[row]) and (df['Close'].iloc[row-1] > df['Bollinger_Lower'].iloc[row-1]):
+        df['Position'].iloc[row] = 1 
+
+
 
 #Forward fill our position column to replace the "None" values with the correct long/short positions to represent the "holding" of our position
 #forward through time
@@ -159,6 +172,65 @@ df['Strategy Return'] = df['Market Return'] * df['Position'].shift(1)
 #Plot the strategy returns
 plt.figure()
 df['Strategy Return'].cumsum().plot(title = 'Cumulative Return')
+df['Market Return'].cumsum().plot(color = 'blue')
+
+
+
+
+
+# In[]: let's try the dollar cost average basis
+ds = tt.copy()
+ds['Daily_Return'] = ds['Close'].pct_change()
+ds['DCA_Position'] = 0
+
+
+def IsFirstWed(data):
+    # 0 is Monday, 4 is Friday
+    date_form = datetime.strptime(str(data).split(" ")[0], "%Y-%m-%d")
+
+    return date_form.weekday() == 2 and 2 <= date_form.day <= 8 
+
+# assign DCA average allocation 
+dca_allocation_amt = 100
+
+ds['FirstWed'] = list(map(lambda x: IsFirstWed(x), ds.index))
+
+rebal_dates = ds.index[ds['FirstWed'] == True]
+ds.loc[rebal_dates, 'DCA_Add_On'] = dca_allocation_amt
+ds['DCA_Add_On'] = ds['DCA_Add_On'].fillna(0)
+
+#Calculate the daily market return and multiply that by the position to determine strategy returns
+
+ds['Market Return'] = np.NaN
+ds['DCA_Ret'] = np.NaN
+
+#Adjust the returns so that it omits the data before the first Add_On date
+start_date = ds.index[np.where(ds['FirstWed'] == True)[0][0]]
+start_index = np.where(ds.index == start_date)[0][0]
+# ds.iloc[:np.where(ds.index == start_date)[0][0], -2:] = np.NaN
+
+# assuming the Add_On investment kicks in the same day (adds to the index at previous close)
+for i in range(start_index,len(ds)):
+    ds.loc[ds.index[i],'DCA_Position'] = (ds.loc[ds.index[i-1],'DCA_Position'] + ds.loc[ds.index[i],'DCA_Add_On']) * (1+ds.loc[ds.index[i],'Daily_Return']) 
+    ds.loc[ds.index[i],'DCA_Ret'] = np.log(ds.loc[ds.index[i], 'DCA_Position'] / ds.loc[ds.index[i-1], 'DCA_Position'])
+    ds.loc[ds.index[i],'Market Return'] = np.log(ds.loc[ds.index[i],'Close'] / ds.loc[ds.index[i-1],'Close'] )
+    # if date is rebal_date, account for the extra DCA allocation 
+    if ds.index[i] in rebal_dates:
+        ds.loc[ds.index[i],'DCA_Ret'] = np.log((ds.loc[ds.index[i], 'DCA_Position'] - dca_allocation_amt) / ds.loc[ds.index[i-1], 'DCA_Position'])
+
+ds.loc[ds.index[start_index], 'DCA_Ret'] = ds.loc[ds.index[start_index], 'Market Return']
+
+ds['DCA_cum_ret'] = ds['DCA_Ret'].cumsum()
+ds['Mkt_cum_ret'] = ds['Market Return'].cumsum()
+
+
+# it makes more sense to specify dates in the initial data cut, as the cum return would not be accurate otherwise
+end_date = date(2008,1,1)
+
+#Plot the strategy returns
+plt.figure()
+ds.loc[:end_date,'DCA_cum_ret'].plot(title = 'Cumulative Return')
+ds.loc[:end_date,'Mkt_cum_ret'].plot(color = 'black')
 
 
 

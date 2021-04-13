@@ -69,7 +69,24 @@ search_result = investpy.search_funds(by='name', value='500')
 # the underlying is the S&P 500 TR which is exactly what we are looking for
 df = investpy.get_fund_historical_data(fund='Vanguard 500 Index Fund Investor Shares', country='united states', from_date='01/01/2018', to_date='01/01/2019')
 
+# In[]: 
+# retrieving stock price
+path = 'C:/Users/yushi/OneDrive - ualberta.ca/Archego Companies Screen'
+file = 'companies_list.xlsx'
+os.chdir(path)
+source_df = pd.read_excel(file,sheet_name='raw_ticker')
+df = source_df
 
+march12 = {}
+for i in df.TICKER:
+    temp = investpy.get_stock_historical_data(stock = i, country = 'united states', from_date = '30/12/2020', to_date = '31/12/2020')['Close']
+    temp = temp.reset_index()
+    temp.columns = ['Date',i]
+    price['Ticker'] = i
+    price['Price'] = temp.iloc[1,1]
+    
+
+# In[]: 
 
 df_close = pd.DataFrame(closing)
 close_ret = df_close.pct_change()
