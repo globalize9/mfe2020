@@ -59,7 +59,7 @@ class ETF:
         return data
         
 
-test = ETF('Vanguard 500 Index Fund Investor Shares', 'united states', '01/01/2018','01/01/2019')
+test = ETF('Vanguard 500 Index Fund Investor Shares', 'united states', '01/01/2020','01/01/2021')
 
 test.BollingerBand()
 
@@ -72,7 +72,7 @@ data = yf.download(  # or pdr.get_data_yahoo(...
         # use "period" instead of start/end
         # valid periods: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max
         # (optional, default is '1mo')
-        period = "20y",
+        period = "10y",
 
         # fetch data by interval (including intraday if period < 60 days)
         # valid intervals: 1m,2m,5m,15m,30m,60m,90m,1h,1d,5d,1wk,1mo,3mo
@@ -166,13 +166,14 @@ for row in range(len(df)):
 df['Position'].fillna(method='ffill',inplace=True)
 
 #Calculate the daily market return and multiply that by the position to determine strategy returns
-df['Market Return'] = np.log(df['Close'] / df['Close'].shift(1))
+df['Market Return'] = df['Close'] / df['Close'].shift(1) 
 df['Strategy Return'] = df['Market Return'] * df['Position'].shift(1)
 
 #Plot the strategy returns
 plt.figure()
-df['Strategy Return'].cumsum().plot(title = 'Cumulative Return')
-df['Market Return'].cumsum().plot(color = 'blue')
+# this ignores the zero return for strategy return when there isn't a position
+df['Strategy Return'][df['Strategy Return']>0].cumprod().plot(title = 'Cumulative Return').legend()
+df['Market Return'].cumprod().plot(color = 'blue').legend()
 
 
 
@@ -225,14 +226,14 @@ ds['Mkt_cum_ret'] = ds['Market Return'].cumsum()
 
 
 # it makes more sense to specify dates in the initial data cut, as the cum return would not be accurate otherwise
-end_date = date(2008,1,1)
+end_date = date(2020,12,31)
 
 #Plot the strategy returns
 plt.figure()
-ds.loc[:end_date,'DCA_cum_ret'].plot(title = 'Cumulative Return')
-ds.loc[:end_date,'Mkt_cum_ret'].plot(color = 'black')
+ds.loc[:end_date,'DCA_cum_ret'].plot(title = 'Cumulative Return', alpha = 0.8).legend()
+ds.loc[:end_date,'Mkt_cum_ret'].plot(color = 'black', alpha = 0.8).legend()
 
-
+ds.to_excel('DCA_test.xlsx')
 
 
     
