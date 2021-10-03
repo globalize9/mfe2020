@@ -180,6 +180,11 @@ df['Market Return'].cumprod().plot(color = 'blue').legend()
 
 
 # In[]: let's try the dollar cost average basis
+# do NOT use log returns here, as log return is time additive, i.e. log return from t -> t + 1 and t + 1 -> t + 2 is the same as
+# t -> t + 2, but once portfolio weights are introduced, this statement no longer holds
+# DCA investment hits the return on the day it is invested using prior day's closing price
+# but your return is calculated using the closing price of today
+
 ds = tt.copy()
 ds['Daily_Return'] = ds['Close'].pct_change()
 ds['DCA_Position'] = 0
@@ -192,7 +197,8 @@ def IsFirstWed(data):
     return date_form.weekday() == 2 and 2 <= date_form.day <= 8 
 
 # assign DCA average allocation 
-dca_allocation_amt = 100
+dca_allocation_amt = 1000
+init_allocation_amt = dca_allocation_amt
 
 ds['FirstWed'] = list(map(lambda x: IsFirstWed(x), ds.index))
 
@@ -207,19 +213,21 @@ ds['DCA_Ret'] = np.NaN
 
 #Adjust the returns so that it omits the data before the first Add_On date
 start_date = ds.index[np.where(ds['FirstWed'] == True)[0][0]]
-start_index = np.where(ds.index == start_date)[0][0]
+start_index = np.where(ds.index == start_date)[0][0] + 1
 # ds.iloc[:np.where(ds.index == start_date)[0][0], -2:] = np.NaN
+ds.loc[ds.index[start_index - 1],'DCA_Position'] = init_allocation_amt
 
-# assuming the Add_On investment kicks in the same day (adds to the index at previous close)
+# assuming the Add_On investment kicks in the same day (adds to the index at today's close)
 for i in range(start_index,len(ds)):
-    ds.loc[ds.index[i],'DCA_Position'] = (ds.loc[ds.index[i-1],'DCA_Position'] + ds.loc[ds.index[i],'DCA_Add_On']) * (1+ds.loc[ds.index[i],'Daily_Return']) 
+    ds.loc[ds.index[i],'DCA_Position'] = ds.loc[ds.index[i-1],'DCA_Position'] * (1+ds.loc[ds.index[i],'Daily_Return']) 
     ds.loc[ds.index[i],'DCA_Ret'] = np.log(ds.loc[ds.index[i], 'DCA_Position'] / ds.loc[ds.index[i-1], 'DCA_Position'])
     ds.loc[ds.index[i],'Market Return'] = np.log(ds.loc[ds.index[i],'Close'] / ds.loc[ds.index[i-1],'Close'] )
     # if date is rebal_date, account for the extra DCA allocation 
     if ds.index[i] in rebal_dates:
-        ds.loc[ds.index[i],'DCA_Ret'] = np.log((ds.loc[ds.index[i], 'DCA_Position'] - dca_allocation_amt) / ds.loc[ds.index[i-1], 'DCA_Position'])
+        # ds.loc[ds.index[i],'DCA_Ret'] = np.log((ds.loc[ds.index[i], 'DCA_Position'] - dca_allocation_amt) / ds.loc[ds.index[i-1], 'DCA_Position'])
+        ds.loc[ds.index[i],'DCA_Position'] += ds.loc[ds.index[i],'DCA_Add_On']
 
-ds.loc[ds.index[start_index], 'DCA_Ret'] = ds.loc[ds.index[start_index], 'Market Return']
+# ds.loc[ds.index[start_index], 'DCA_Ret'] = ds.loc[ds.index[start_index], 'Market Return']
 
 ds['DCA_cum_ret'] = ds['DCA_Ret'].cumsum()
 ds['Mkt_cum_ret'] = ds['Market Return'].cumsum()
@@ -228,12 +236,21 @@ ds['Mkt_cum_ret'] = ds['Market Return'].cumsum()
 # it makes more sense to specify dates in the initial data cut, as the cum return would not be accurate otherwise
 end_date = date(2020,12,31)
 
+ds_trunc = ds[:end_date].copy()
+total_invested = ds_trunc.DCA_Add_On.sum()
+ds_trunc['Mkt_Position'] = np.NaN
+# assume 3% simple interest rate
+pv_total = total_invested / np.power((1+0.03), ((ds_trunc.index[-1] - ds_trunc.index[0]).days/float(365.25)))
+ds_trunc.loc[ds_trunc.index[start_index - 1],'Mkt_Position'] = pv_total
+# let's calculate the market position over this time span vs DCA
+for i in range(start_index, len(ds_trunc)):
+    ds_trunc.loc[ds_trunc.index[i],'Mkt_Position'] = ds_trunc.loc[ds_trunc.index[i-1],'Mkt_Position'] * (1+ds_trunc.loc[ds_trunc.index[i],'Daily_Return']) 
+
 #Plot the strategy returns
 plt.figure()
 ds.loc[:end_date,'DCA_cum_ret'].plot(title = 'Cumulative Return', alpha = 0.8).legend()
 ds.loc[:end_date,'Mkt_cum_ret'].plot(color = 'black', alpha = 0.8).legend()
-
-ds.to_excel('DCA_test.xlsx')
+# ds.to_excel('DCA_test.xlsx')
 
 
     
