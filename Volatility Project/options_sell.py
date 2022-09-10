@@ -39,7 +39,8 @@ def BSMOptions(S0, r, sigma, T, X, option_type = 'call'):
 
 def ProbITM(S0, r, sigma, T, X, option_type = 'call'):
     d2 = (np.log(S0 / X) + (r - 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
-    return(si.norm.cdf(d2))
+    if option_type == 'call': return(si.norm.cdf(d2))
+    else: return(si.norm.cdf(-d2))
 
 def ImpliedMove(S0, calldf, putdf):
     put_idx = np.abs(putdf['strike'] - S0).argmin() # find nearest strike
@@ -85,15 +86,16 @@ if __name__ == "__main__":
     
     ## inputs
     ticker = 'KWEB'
-    opt_exp_date = '2022-09-16' # typically the third Friday of every month
     
-    # modify the list below as necessary, by entering an incorrect date into getdata, it will return a list of available dates
-    exp_dates = ['2022-09-16', '2022-09-23', '2022-09-30', '2022-10-07', '2022-10-14', '2022-10-21',
-                 '2022-11-18', '2022-12-16', '2023-01-20', '2023-02-17', '2023-03-17', '2024-01-19']
+    # obtains the available options expiry dates for a particular underlying
+    stock = yf.Ticker(ticker)
+    exp_dates = stock.options 
+    opt_exp_date = exp_dates[0] # temp use of the first exp date
     
     implied_move_df = pd.DataFrame(None, index = exp_dates, columns = ['Implied_Move'])
     
-    initial_price = 28.72 # obtain the relevant strikes around this value
+    calldf, putdf, stockdf = getdata(ticker,opt_exp_date, save = False)
+    initial_price = round(stockdf.iloc[-1]['Close'],2) # obtain the relevant strikes around this value
     strike_mid = 1 * round(initial_price/1)
     strike_width = 5
     strike_col = range((strike_mid - strike_width)*10, (strike_mid + strike_width)*10, 5)
