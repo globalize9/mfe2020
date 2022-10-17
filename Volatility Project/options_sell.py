@@ -85,7 +85,7 @@ def CleanDF(df, stockdf, time_to_expiry, opt_type, bs_filter = True):
 if __name__ == "__main__":
     
     ## inputs
-    ticker = 'KWEB'
+    ticker = input('Enter a ticker: ')
     
     # obtains the available options expiry dates for a particular underlying
     stock = yf.Ticker(ticker)
@@ -132,8 +132,10 @@ if __name__ == "__main__":
     implied_move_df['Percentage'] = implied_move_df['Implied_Move'] / initial_price
     implied_move_df['Lower'] = initial_price - implied_move_df['Implied_Move']
     implied_move_df['Upper'] = initial_price + implied_move_df['Implied_Move']
+
+    print('{} options implied moves generated'.format(ticker))
     
-    with pd.ExcelWriter('{}_{}.xlsx'.format(ticker,date.today().strftime('%Y-%m-%d'))) as writer:
+    with pd.ExcelWriter('{}_{}22.xlsx'.format(ticker,date.today().strftime('%Y-%m-%d'))) as writer:
         puts_df.to_excel(writer, sheet_name = 'ProbITM')
         puts_tv_df.to_excel(writer, sheet_name = 'TimeValue')
         implied_move_df.to_excel(writer, sheet_name = 'ImpliedMove')
