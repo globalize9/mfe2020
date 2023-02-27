@@ -83,6 +83,19 @@ class Options:
             temp_df = temp_df[temp_df['Diff'] < bs_filter_cutoff].reset_index(drop=True)
         return temp_df
     
+    def RSI(self, stockdf, period = 14):
+        # NOTE prices with losses in rsi_up is counted as ZERO and vice versa for gain in rsi_down
+        # Overbought >70, oversold < 30, works best in trading ranges vs trending market
+        rsi_df = stockdf.copy()
+        rsi_df['return'] = rsi_df['Close'] / rsi_df['Close'].shift(1) - 1
+        rsi_df['return_up'] = rsi_df['return'].clip(lower = 0) # useful if you want to preserve the order
+        rsi_df['return_down'] = rsi_df['return'].clip(upper = 0)
+        rsi_df['rsi_up'] = rsi_df['return_up'].rolling(window = period).mean()
+        rsi_df['rsi_down'] = - rsi_df['return_down'].rolling(window = period).mean() # absolute return comparison
+        rsi_df['RSI'] = 100 - 100 / (1 + rsi_df['rsi_up'] / rsi_df['rsi_down'])
+        return rsi_df
+    
+    
     def MainDF(self):
         opt_exp_date = self.expiry_dates[0] # temp use of the first exp date
         
